@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -19,10 +19,7 @@ gsap.registerPlugin(ScrollTrigger);
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const mainRef = useRef<HTMLDivElement>(null);
-  const lenisRef = useRef<Lenis | null>(null);
 
-  // Initialize Lenis smooth scroll
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -32,22 +29,10 @@ function App() {
       smoothWheel: true,
     });
 
-    lenisRef.current = lenis;
-
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    // Connect Lenis to GSAP ScrollTrigger
     lenis.on('scroll', ScrollTrigger.update);
-
     gsap.ticker.add((time) => {
       lenis.raf(time * 1000);
     });
-
     gsap.ticker.lagSmoothing(0);
 
     return () => {
@@ -55,7 +40,7 @@ function App() {
     };
   }, []);
 
-  // Handle loading completion
+  // Show the page after a fixed loading-screen interval
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -64,39 +49,23 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Initialize scroll animations after loading
   useEffect(() => {
-    if (!isLoading) {
-      // Refresh ScrollTrigger after content loads
-      ScrollTrigger.refresh();
-    }
+    if (!isLoading) ScrollTrigger.refresh();
   }, [isLoading]);
 
   return (
     <>
-      {/* Loading Screen */}
       <LoadingScreen isLoading={isLoading} />
-
-      {/* Custom Cursor */}
       <CustomCursor />
-
-      {/* Scroll Progress */}
       <ScrollProgress />
-
-      {/* Header */}
       <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-
-      {/* Menu Overlay */}
       <MenuOverlay isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
 
-      {/* Main Content */}
       <main
-        ref={mainRef}
         className={`relative transition-opacity duration-500 ${
           isLoading ? 'opacity-0' : 'opacity-100'
         }`}
       >
-        {/* Hero Section */}
         <section className="relative h-screen w-full bg-[#f2f2f2] overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-[80vw] h-[60vh] max-w-[1200px]">
@@ -110,33 +79,15 @@ function App() {
             </div>
           </div>
 
-          {/* Hero Footer */}
           <div className="absolute bottom-0 left-0 right-0 h-16 flex items-center justify-between px-8 bg-[#f2f2f2]">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-light text-[#1a1a1a]">+</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-light text-[#1a1a1a]">+</span>
-            </div>
             <div className="flex items-center gap-2 text-sm tracking-wider text-[#666]">
               <span className="scroll-bounce">SCROLL TO EXPLORE</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-light text-[#1a1a1a]">+</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-light text-[#1a1a1a]">+</span>
             </div>
           </div>
         </section>
 
-        {/* Projects Section */}
         <ProjectsSection />
-
-        {/* About Section */}
         <AboutSection />
-
-        {/* Footer */}
         <Footer />
       </main>
     </>
